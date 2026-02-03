@@ -5,6 +5,9 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import Leaderboard from '@/components/Leaderboard';
 import AgentCard from '@/components/AgentCard';
 import SeasonInfo from '@/components/SeasonInfo';
+import PredictionInterface from '@/components/PredictionInterface';
+import DuelArena from '@/components/DuelArena';
+import MyAgents from '@/components/MyAgents';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('leaderboard');
@@ -81,7 +84,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 py-12">
         {/* Tabs */}
         <div className="flex gap-2 mb-8 border-b border-gray-800">
-          {['leaderboard', 'seasons', 'my-agents', 'duels'].map((tab) => (
+          {['leaderboard', 'predictions', 'seasons', 'duels', 'my-agents'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -98,17 +101,10 @@ export default function Home() {
 
         {/* Tab Content */}
         {activeTab === 'leaderboard' && <Leaderboard />}
+        {activeTab === 'predictions' && <PredictionInterface />}
         {activeTab === 'seasons' && <SeasonInfo />}
-        {activeTab === 'my-agents' && (
-          <div className="text-center py-20 text-gray-400">
-            <p className="text-xl">Connect your wallet to view your agents</p>
-          </div>
-        )}
-        {activeTab === 'duels' && (
-          <div className="text-center py-20 text-gray-400">
-            <p className="text-xl">Head-to-head agent battles coming soon...</p>
-          </div>
-        )}
+        {activeTab === 'my-agents' && <MyAgents />}
+        {activeTab === 'duels' && <DuelArena />}
       </section>
 
       {/* Footer */}
