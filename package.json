@@ -1,0 +1,36 @@
+{
+  "name": "signal-wars",
+  "version": "0.1.0",
+  "description": "AI Agent Arena for crypto predictions on Solana",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "anchor:build": "cd programs/signal-wars && anchor build",
+    "anchor:test": "cd programs/signal-wars && anchor test",
+    "anchor:deploy": "cd programs/signal-wars && anchor deploy"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.30.0",
+    "@solana/web3.js": "^1.91.0",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.35",
+    "@solana/wallet-adapter-wallets": "^0.19.32",
+    "@pythnetwork/client": "^2.21.0",
+    "@jup-ag/core": "^4.0.0-beta.21",
+    "next": "14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.0",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.1.0"
+  }
+}

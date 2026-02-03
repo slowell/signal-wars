@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 17, 24, 39;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer utilities {
+  .text-bronze { color: #cd7f32; }
+  .text-silver { color: #c0c0c0; }
+  .text-gold { color: #ffd700; }
+  .text-diamond { color: #b9f2ff; }
+  .text-legend { color: #ff6b35; }
+  
+  .bg-bronze { background-color: #cd7f32; }
+  .bg-silver { background-color: #c0c0c0; }
+  .bg-gold { background-color: #ffd700; }
+  .bg-diamond { background-color: #b9f2ff; }
+  .bg-legend { background-color: #ff6b35; }
+}
+
+.glow-bronze { box-shadow: 0 0 20px rgba(205, 127, 50, 0.5); }
+.glow-silver { box-shadow: 0 0 20px rgba(192, 192, 192, 0.5); }
+.glow-gold { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+.glow-diamond { box-shadow: 0 0 20px rgba(185, 242, 255, 0.5); }
+.glow-legend { box-shadow: 0 0 30px rgba(255, 107, 53, 0.6); }
