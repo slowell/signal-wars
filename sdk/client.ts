@@ -1,169 +1,81 @@
 import * as anchor from '@coral-xyz/anchor';
-import { Program, AnchorProvider, web3, BN } from '@coral-xyz/anchor';
-import { SignalWars } from '../types/signal_wars';
+import { AnchorProvider, web3, BN } from '@coral-xyz/anchor';
+
+/**
+ * Signal Wars Client SDK
+ * 
+ * A simplified client for interacting with the Signal Wars program.
+ * This is a placeholder implementation that will be replaced with
+ * the full Anchor-generated client when the program is deployed.
+ */
 
 export class SignalWarsClient {
-  program: Program<SignalWars>;
   provider: AnchorProvider;
+  programId: web3.PublicKey;
 
-  constructor(connection: web3.Connection, wallet: anchor.Wallet) {
+  constructor(connection: web3.Connection, wallet: anchor.Wallet, programId?: web3.PublicKey) {
     this.provider = new AnchorProvider(connection, wallet, {
       commitment: 'confirmed',
     });
     anchor.setProvider(this.provider);
     
-    // IDL would be loaded from JSON file
-    this.program = new Program(require('./idl/signal_wars.json'), this.provider);
+    // Use provided program ID or a placeholder
+    this.programId = programId || new web3.PublicKey('11111111111111111111111111111111');
   }
 
-  // Initialize the global arena
-  async initializeArena(authority: web3.PublicKey): Promise<web3.PublicKey> {
-    const [arenaPda] = web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('arena')],
-      this.program.programId
-    );
-
-    await this.program.methods
-      .initializeArena()
-      .accounts({
-        arena: arenaPda,
-        authority,
-        systemProgram: web3.SystemProgram.programId,
-      })
-      .rpc();
-
-    return arenaPda;
+  // Placeholder methods - will be implemented with actual IDL
+  async initializeArena(_authority: web3.PublicKey): Promise<web3.PublicKey> {
+    throw new Error('Not implemented until program is deployed');
   }
 
-  // Register a new agent
   async registerAgent(
-    owner: web3.PublicKey,
-    name: string,
-    endpoint: string
+    _owner: web3.PublicKey,
+    _name: string,
+    _endpoint: string
   ): Promise<web3.PublicKey> {
-    const [agentPda] = web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('agent'), owner.toBuffer()],
-      this.program.programId
-    );
-
-    const [arenaPda] = web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('arena')],
-      this.program.programId
-    );
-
-    await this.program.methods
-      .registerAgent(name, endpoint)
-      .accounts({
-        agent: agentPda,
-        arena: arenaPda,
-        owner,
-        systemProgram: web3.SystemProgram.programId,
-      })
-      .rpc();
-
-    return agentPda;
+    throw new Error('Not implemented until program is deployed');
   }
 
-  // Create a new season
   async createSeason(
-    authority: web3.PublicKey,
-    entryFee: BN,
-    durationDays: number,
-    prizePoolBps: number,
-    seasonId: BN
+    _authority: web3.PublicKey,
+    _entryFee: BN,
+    _durationDays: number,
+    _prizePoolBps: number,
+    _seasonId: BN
   ): Promise<web3.PublicKey> {
-    const [seasonPda] = web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('season'), seasonId.toArrayLike(Buffer, 'le', 8)],
-      this.program.programId
-    );
-
-    const [arenaPda] = web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('arena')],
-      this.program.programId
-    );
-
-    await this.program.methods
-      .createSeason(entryFee, durationDays, prizePoolBps)
-      .accounts({
-        season: seasonPda,
-        arena: arenaPda,
-        authority,
-        systemProgram: web3.SystemProgram.programId,
-      })
-      .rpc();
-
-    return seasonPda;
+    throw new Error('Not implemented until program is deployed');
   }
 
-  // Submit a prediction (commit hash)
   async submitPrediction(
-    player: web3.PublicKey,
-    agent: web3.PublicKey,
-    season: web3.PublicKey,
-    predictionHash: Buffer,
-    stakeAmount: BN,
-    predictionCount: BN
+    _player: web3.PublicKey,
+    _agent: web3.PublicKey,
+    _season: web3.PublicKey,
+    _predictionHash: Buffer,
+    _stakeAmount: BN,
+    _predictionCount: BN
   ): Promise<web3.PublicKey> {
-    const [predictionPda] = web3.PublicKey.findProgramAddressSync(
-      [
-        Buffer.from('prediction'),
-        agent.toBuffer(),
-        season.toBuffer(),
-        predictionCount.toArrayLike(Buffer, 'le', 8),
-      ],
-      this.program.programId
-    );
-
-    const [vaultPda] = web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('prediction_vault'), predictionPda.toBuffer()],
-      this.program.programId
-    );
-
-    await this.program.methods
-      .submitPrediction(Array.from(predictionHash), stakeAmount)
-      .accounts({
-        season,
-        agent,
-        prediction: predictionPda,
-        player,
-        predictionVault: vaultPda,
-        systemProgram: web3.SystemProgram.programId,
-      })
-      .rpc();
-
-    return predictionPda;
+    throw new Error('Not implemented until program is deployed');
   }
 
-  // Reveal prediction
   async revealPrediction(
-    player: web3.PublicKey,
-    agent: web3.PublicKey,
-    prediction: web3.PublicKey,
-    predictionData: string
+    _player: web3.PublicKey,
+    _agent: web3.PublicKey,
+    _prediction: web3.PublicKey,
+    _predictionData: string
   ): Promise<void> {
-    await this.program.methods
-      .revealPrediction(predictionData)
-      .accounts({
-        prediction,
-        agent,
-        player,
-      })
-      .rpc();
+    throw new Error('Not implemented until program is deployed');
   }
 
-  // Get agent info
-  async getAgent(agentPda: web3.PublicKey): Promise<any> {
-    return await this.program.account.agent.fetch(agentPda);
+  async getAgent(_agentPda: web3.PublicKey): Promise<any> {
+    throw new Error('Not implemented until program is deployed');
   }
 
-  // Get season info
-  async getSeason(seasonPda: web3.PublicKey): Promise<any> {
-    return await this.program.account.season.fetch(seasonPda);
+  async getSeason(_seasonPda: web3.PublicKey): Promise<any> {
+    throw new Error('Not implemented until program is deployed');
   }
 
-  // Get prediction info
-  async getPrediction(predictionPda: web3.PublicKey): Promise<any> {
-    return await this.program.account.prediction.fetch(predictionPda);
+  async getPrediction(_predictionPda: web3.PublicKey): Promise<any> {
+    throw new Error('Not implemented until program is deployed');
   }
 
   // Helper: Create prediction hash

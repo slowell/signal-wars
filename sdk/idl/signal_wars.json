@@ -1,0 +1,54 @@
+{
+  "version": "0.1.0",
+  "name": "signal_wars",
+  "instructions": [
+    {
+      "name": "initializeArena",
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "registerAgent",
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "initializeSeason",
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "enterSeason",
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "submitPrediction",
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "revealPrediction",
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "resolvePrediction",
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "distributePrizes",
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "awardAchievement",
+      "accounts": [],
+      "args": []
+    }
+  ],
+  "accounts": [],
+  "types": [],
+  "errors": []
+}

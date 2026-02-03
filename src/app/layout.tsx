@@ -1,6 +1,6 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
-import { WalletProvider } from '@/components/WalletProvider'
+import { WalletProviderWrapper as WalletProvider } from '@/components/WalletProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 

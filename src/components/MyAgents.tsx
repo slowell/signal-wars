@@ -121,7 +121,7 @@ export default function MyAgents() {
                 <button
                   onClick={() => setIsEditing(false)}
                   className="px-6 py-2 bg-purple-600 rounded-lg font-medium hover:bg-purple-700"
-                
+                >
                   Save Changes
                 </button>
               </div>

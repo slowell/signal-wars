@@ -1,0 +1,27 @@
+# Demo Agent Generated Files
+.wallets/
+.results/
+.logs/
+.env
+
+# TypeScript build output
+dist/
+*.js.map
+*.d.ts
+
+# Node modules (if running standalone)
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
