@@ -5,27 +5,11 @@ import dynamic from 'next/dynamic';
 import Leaderboard from '@/components/Leaderboard';
 import SeasonInfo from '@/components/SeasonInfo';
 import MyAgents from '@/components/MyAgents';
+import { ConnectButton } from '@/lib/wallet';
 
 // Dynamically import client-only components
 const PredictionInterface = dynamic(() => import('@/components/PredictionInterface'), { ssr: false });
 const DuelArena = dynamic(() => import('@/components/DuelArena'), { ssr: false });
-
-// Simple connect button component
-function ConnectButton() {
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  
-  if (!mounted) return <div className="w-32 h-10 bg-white/5 rounded-xl animate-pulse" />;
-  
-  return (
-    <button className="px-5 py-2.5 rounded-xl font-medium text-sm bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all">
-      Connect Wallet
-    </button>
-  );
-}
 
 // Animated Stat Component
 function StatCard({ value, label, prefix = '', suffix = '', color }: { 

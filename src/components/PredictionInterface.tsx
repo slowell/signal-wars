@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey } from '@solana/web3.js';
+import { SUPPORTED_TOKENS, TOKEN_CATEGORIES, POPULAR_TOKENS, getTokenBySymbol } from '@/lib/tokens';
 
 interface Prediction {
   id: string;
@@ -60,11 +59,9 @@ const mockPredictions: Prediction[] = [
   },
 ];
 
-const assets = ['SOL', 'BTC', 'ETH', 'JTO', 'BONK', 'PYTH', 'JUP'];
 const timeframes = ['1h', '4h', '24h', '48h', '7d'];
 
 export default function PredictionInterface() {
-  const { publicKey } = useWallet();
   const [activeTab, setActiveTab] = useState('active');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState('SOL');
@@ -73,6 +70,8 @@ export default function PredictionInterface() {
   const [stakeAmount, setStakeAmount] = useState('');
   const [confidence, setConfidence] = useState(50);
   const [selectedTimeframe, setSelectedTimeframe] = useState('24h');
+  const [tokenFilter, setTokenFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredPredictions = mockPredictions.filter(p => {
     if (activeTab === 'active') return p.status === 'committed' || p.status === 'revealed';
@@ -80,8 +79,18 @@ export default function PredictionInterface() {
     return true;
   });
 
+  // Filter tokens based on category and search
+  const filteredTokens = SUPPORTED_TOKENS.filter(token => {
+    const matchesCategory = tokenFilter === 'all' || token.category === tokenFilter;
+    const matchesSearch = token.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         token.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  // Get popular tokens first
+  const popularTokensList = POPULAR_TOKENS.map(sym => getTokenBySymbol(sym)).filter(Boolean);
+
   const handleCreatePrediction = () => {
-    // TODO: Call smart contract
     console.log('Creating prediction:', {
       asset: selectedAsset,
       direction,
@@ -91,6 +100,11 @@ export default function PredictionInterface() {
       timeframe: selectedTimeframe,
     });
     setShowCreateModal(false);
+  };
+
+  const getTokenIcon = (symbol: string) => {
+    const token = getTokenBySymbol(symbol);
+    return token?.icon || '🪙';
   };
 
   return (
@@ -155,15 +169,7 @@ export default function PredictionInterface() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="text-3xl">
-                  {prediction.asset === 'SOL' && '☀️'}
-                  {prediction.asset === 'BTC' && '₿'}
-                  {prediction.asset === 'ETH' && 'Ξ'}
-                  {prediction.asset === 'BONK' && '🐕'}
-                  {prediction.asset === 'JTO' && '🔷'}
-                  {prediction.asset === 'PYTH' && '🔮'}
-                  {prediction.asset === 'JUP' && '🪐'}
-                </div>
+                <div className="text-3xl">{getTokenIcon(prediction.asset)}</div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-bold">{prediction.asset}</h3>
@@ -234,27 +240,102 @@ export default function PredictionInterface() {
       {/* Create Prediction Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-2xl p-6 w-full max-w-lg border border-gray-700">
+          <div className="bg-gray-900 rounded-2xl p-6 w-full max-w-2xl border border-gray-700 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold mb-4">Create New Prediction</h3>
 
             <div className="space-y-4">
-              {/* Asset Selection */}
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Asset</label>
+              {/* Search & Filter */}
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search tokens..."
+                  className="w-full px-4 py-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                />
+                
                 <div className="flex gap-2 flex-wrap">
-                  {assets.map((asset) => (
+                  <button
+                    onClick={() => setTokenFilter('all')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      tokenFilter === 'all'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    All
+                  </button>
+                  {TOKEN_CATEGORIES.map((cat) => (
                     <button
-                      key={asset}
-                      onClick={() => setSelectedAsset(asset)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                        selectedAsset === asset
+                      key={cat.id}
+                      onClick={() => setTokenFilter(cat.id)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                        tokenFilter === cat.id
                           ? 'bg-purple-600 text-white'
                           : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                       }`}
                     >
-                      {asset}
+                      {cat.label}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Popular Tokens */}
+              {!searchQuery && tokenFilter === 'all' && (
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">Popular</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {popularTokensList.map((token) => token && (
+                      <button
+                        key={token.symbol}
+                        onClick={() => setSelectedAsset(token.symbol)}
+                        className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                          selectedAsset === token.symbol
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        }`}
+                      >
+                        <span>{token.icon}</span>
+                        <span>{token.symbol}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* All Tokens Grid */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">
+                  {searchQuery ? 'Search Results' : 'All Tokens'}
+                </label>
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-48 overflow-y-auto p-2 bg-gray-800/50 rounded-lg">
+                  {filteredTokens.map((token) => (
+                    <button
+                      key={token.symbol}
+                      onClick={() => setSelectedAsset(token.symbol)}
+                      className={`p-2 rounded-lg font-medium transition-all flex flex-col items-center gap-1 ${
+                        selectedAsset === token.symbol
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                      }`}
+                      title={token.name}
+                    >
+                      <span className="text-lg">{token.icon}</span>
+                      <span className="text-xs">{token.symbol}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Selected Token Display */}
+              <div className="p-4 bg-gray-800/50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{getTokenIcon(selectedAsset)}</span>
+                  <div>
+                    <p className="font-bold">{selectedAsset}</p>
+                    <p className="text-sm text-gray-400">{getTokenBySymbol(selectedAsset)?.name}</p>
+                  </div>
                 </div>
               </div>
 
