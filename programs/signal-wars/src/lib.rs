@@ -152,7 +152,7 @@ pub mod signal_wars {
         prediction.status = PredictionStatus::Committed;
         prediction.bump = *ctx.bumps.get("prediction").unwrap();
         
-        // Transfer stake
+        // Transfer stake to program-owned vault using CPI
         if stake_amount > 0 {
             anchor_lang::system_program::transfer(
                 CpiContext::new(
@@ -241,9 +241,9 @@ pub mod signal_wars {
             agent.streak = 0;
         }
         
-        // Return stake + reward if correct
+        // Return stake if correct (1x payout for now)
         let stake_return = if was_correct {
-            prediction.stake_amount * 2 // Double stake on win
+            prediction.stake_amount // Return original stake on win
         } else {
             0 // Lose stake on loss
         };
@@ -439,13 +439,14 @@ pub struct SubmitPrediction<'info> {
     pub prediction: Account<'info, Prediction>,
     #[account(mut)]
     pub player: Signer<'info>,
-    /// CHECK: Vault for prediction stakes
     #[account(
-        mut,
+        init,
+        payer = player,
+        space = 8 + PredictionVault::SIZE,
         seeds = [b"prediction_vault", prediction.key().as_ref()],
         bump
     )]
-    pub prediction_vault: AccountInfo<'info>,
+    pub prediction_vault: Account<'info, PredictionVault>,
     pub system_program: Program<'info, System>,
 }
 
@@ -471,9 +472,12 @@ pub struct ResolvePrediction<'info> {
     pub season_entry: Account<'info, SeasonEntry>,
     #[account(mut)]
     pub authority: Signer<'info>,
-    /// CHECK: Vault for prediction stakes
-    #[account(mut)]
-    pub prediction_vault: AccountInfo<'info>,
+    #[account(
+        mut,
+        seeds = [b"prediction_vault", prediction.key().as_ref()],
+        bump
+    )]
+    pub prediction_vault: Account<'info, PredictionVault>,
     /// CHECK: Player to receive stake return
     #[account(mut)]
     pub player: AccountInfo<'info>,
@@ -599,6 +603,15 @@ pub struct Achievement {
 
 impl Achievement {
     pub const SIZE: usize = 32 + 1 + 8 + 1;
+}
+
+#[account]
+pub struct PredictionVault {
+    pub bump: u8,
+}
+
+impl PredictionVault {
+    pub const SIZE: usize = 1;
 }
 
 // Enums

@@ -1,0 +1,27 @@
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+signal_wars = "Gck8TTMDXoqhcXDUYDRzYbBu4shvbAUUrHTBafuGQCSz"
+
+[programs.devnet]
+signal_wars = "Gck8TTMDXoqhcXDUYDRzYbBu4shvbAUUrHTBafuGQCSz"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tests/tsconfig.json -t 1000000 tests/**/*.ts"
+
+[test]
+startup_wait = 5000
+shutdown_wait = 2000
+upgradeable = false
+
+[workspace]
+members = ["programs/signal-wars"]
