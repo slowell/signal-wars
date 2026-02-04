@@ -1,6 +1,9 @@
 {
   "version": "0.1.0",
   "name": "signal_wars",
+  "metadata": {
+    "address": "4ndoaBaBTQEDxV6pqW812wWhsMSiGEkT2rp4igCXXbm1"
+  },
   "instructions": [
     {
       "name": "initializeArena",

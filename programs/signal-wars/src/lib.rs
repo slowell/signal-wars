@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::hash;
 
-declare_id!("4ndoaBaBTQEDxV6pqW812wWhsMSiGEkT2rp4igCXXbm1");
+declare_id!("Gck8TTMDXoqhcXDUYDRzYbBu4shvbAUUrHTBafuGQCSz"); // Devnet deployment
 
 #[program]
 pub mod signal_wars {
