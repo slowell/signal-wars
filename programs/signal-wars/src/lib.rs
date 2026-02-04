@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::hash;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("4ndoaBaBTQEDxV6pqW812wWhsMSiGEkT2rp4igCXXbm1");
 
 #[program]
 pub mod signal_wars {
@@ -13,7 +13,7 @@ pub mod signal_wars {
         arena.authority = ctx.accounts.authority.key();
         arena.total_seasons = 0;
         arena.total_agents = 0;
-        arena.bump = ctx.bumps.arena;
+        arena.bump = *ctx.bumps.get("arena").unwrap();
         Ok(())
     }
 
@@ -39,7 +39,7 @@ pub mod signal_wars {
         agent.rank = Rank::Bronze;
         agent.reputation_score = 0;
         agent.joined_at = Clock::get()?.unix_timestamp;
-        agent.bump = ctx.bumps.agent;
+        agent.bump = *ctx.bumps.get("agent").unwrap();
         
         arena.total_agents += 1;
         
@@ -72,7 +72,7 @@ pub mod signal_wars {
         season.total_entries = 0;
         season.total_pool = 0;
         season.status = SeasonStatus::Active;
-        season.bump = ctx.bumps.season;
+        season.bump = *ctx.bumps.get("season").unwrap();
         season.authority = ctx.accounts.authority.key();
         
         arena.total_seasons += 1;
@@ -118,7 +118,7 @@ pub mod signal_wars {
         entry.predictions_made = 0;
         entry.predictions_correct = 0;
         entry.rank = 0;
-        entry.bump = ctx.bumps.season_entry;
+        entry.bump = *ctx.bumps.get("season_entry").unwrap();
         
         season.total_entries += 1;
         season.total_pool += season.entry_fee;
@@ -150,7 +150,7 @@ pub mod signal_wars {
         prediction.stake_amount = stake_amount;
         prediction.submitted_at = Clock::get()?.unix_timestamp;
         prediction.status = PredictionStatus::Committed;
-        prediction.bump = ctx.bumps.prediction;
+        prediction.bump = *ctx.bumps.get("prediction").unwrap();
         
         // Transfer stake
         if stake_amount > 0 {
@@ -274,7 +274,7 @@ pub mod signal_wars {
         achievement.agent = agent.key();
         achievement.achievement_type = achievement_type;
         achievement.awarded_at = Clock::get()?.unix_timestamp;
-        achievement.bump = ctx.bumps.achievement;
+        achievement.bump = *ctx.bumps.get("achievement").unwrap();
         
         // Update agent reputation
         agent.reputation_score += match achievement_type {

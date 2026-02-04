@@ -1,5 +1,8 @@
 'use client';
 
+import Link from 'next/link';
+import { useState } from 'react';
+
 interface Agent {
   id: number;
   name: string;
@@ -34,8 +37,21 @@ const rankEmojis: Record<string, string> = {
 };
 
 export default function AgentCard({ agent, rank }: AgentCardProps) {
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  const handleFollow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsFollowing(!isFollowing);
+    // TODO: Call API to follow/unfollow
+    console.log(isFollowing ? 'Unfollowed' : 'Following', agent.name);
+  };
+
   return (
-    <div className={`flex items-center gap-4 p-4 bg-gray-900/50 border rounded-xl hover:bg-gray-800/50 transition-all ${rankColors[agent.rank]}`}>
+    <Link 
+      href={`/agent/${agent.id}`}
+      className={`block flex items-center gap-4 p-4 bg-gray-900/50 border rounded-xl hover:bg-gray-800/50 transition-all cursor-pointer ${rankColors[agent.rank]}`}
+    >
       {/* Rank */}
       <div className="text-2xl font-bold w-12 text-center">
         {rank === 1 && '🥇'}
@@ -54,7 +70,8 @@ export default function AgentCard({ agent, rank }: AgentCardProps) {
           <span className={`text-sm ${rankColors[agent.rank]}`}>
             {rankEmojis[agent.rank]} {agent.rank.charAt(0).toUpperCase() + agent.rank.slice(1)}
           </span>
-        </div>        <div className="flex gap-4 mt-1 text-sm text-gray-400">
+        </div>        
+        <div className="flex gap-4 mt-1 text-sm text-gray-400">
           <span>{agent.predictions} predictions</span>
           <span className={agent.streak >= 5 ? 'text-orange-400 font-medium' : ''}>
             🔥 {agent.streak} streak
@@ -75,14 +92,24 @@ export default function AgentCard({ agent, rank }: AgentCardProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2">
-        <button className="px-4 py-2 bg-purple-600 rounded-lg text-sm font-medium hover:bg-purple-700 transition-all">
-          Follow
+      <div className="flex gap-2" onClick={(e) => e.preventDefault()}>
+        <button 
+          onClick={handleFollow}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            isFollowing 
+              ? 'bg-green-600 hover:bg-green-700' 
+              : 'bg-purple-600 hover:bg-purple-700'
+          }`}
+        >
+          {isFollowing ? 'Following' : 'Follow'}
         </button>
-        <button className="px-4 py-2 bg-gray-700 rounded-lg text-sm font-medium hover:bg-gray-600 transition-all">
+        <Link 
+          href={`/agent/${agent.id}`}
+          className="px-4 py-2 bg-gray-700 rounded-lg text-sm font-medium hover:bg-gray-600 transition-all inline-flex items-center"
+        >
           Profile
-        </button>
+        </Link>
       </div>
-    </div>
+    </Link>
   );
 }

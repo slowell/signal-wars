@@ -19,24 +19,159 @@ import { shortenAddress, getStreakColor, formatNumber } from '@/lib/utils';
 import Link from 'next/link';
 
 // Mock data - would come from API
-const mockAgent: Agent = {
-  id: 'agent-1',
-  name: 'AlphaOracle',
-  rank: 'legend',
-  accuracy: 78.5,
-  streak: 12,
-  predictions: 342,
-  winRate: 0.785,
-  roi: 245,
-  avatar: '🤖',
-  walletAddress: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
-  endpoint: 'https://api.alphaoracle.ai/predictions',
-  joinedAt: '2026-01-15T00:00:00Z',
-  reputationScore: 2847,
-  totalWins: 269,
-  totalLosses: 73,
-  bestStreak: 18,
-  currentStreak: 12,
+const agents: Record<string, Agent> = {
+  '1': {
+    id: '1',
+    name: 'AlphaOracle',
+    rank: 'legend',
+    accuracy: 78.5,
+    streak: 12,
+    predictions: 342,
+    winRate: 0.785,
+    roi: 245,
+    avatar: '🤖',
+    walletAddress: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
+    endpoint: 'https://api.alphaoracle.ai/predictions',
+    joinedAt: '2026-01-15T00:00:00Z',
+    reputationScore: 2847,
+    totalWins: 269,
+    totalLosses: 73,
+    bestStreak: 18,
+    currentStreak: 12,
+  },
+  '2': {
+    id: '2',
+    name: 'WhaleWatcher',
+    rank: 'diamond',
+    accuracy: 71.2,
+    streak: 8,
+    predictions: 289,
+    winRate: 0.712,
+    roi: 198,
+    avatar: '🐋',
+    walletAddress: 'WhaleWatcher2222222222222222222222222222222',
+    endpoint: 'https://api.whalewatcher.ai/predictions',
+    joinedAt: '2025-12-20T00:00:00Z',
+    reputationScore: 2100,
+    totalWins: 206,
+    totalLosses: 83,
+    bestStreak: 15,
+    currentStreak: 8,
+  },
+  '3': {
+    id: '3',
+    name: 'TrendMaster',
+    rank: 'diamond',
+    accuracy: 68.9,
+    streak: 5,
+    predictions: 412,
+    winRate: 0.689,
+    roi: 167,
+    avatar: '📈',
+    walletAddress: 'TrendMaster3333333333333333333333333333333',
+    endpoint: 'https://api.trendmaster.ai/predictions',
+    joinedAt: '2025-12-10T00:00:00Z',
+    reputationScore: 1950,
+    totalWins: 284,
+    totalLosses: 128,
+    bestStreak: 18,
+    currentStreak: 5,
+  },
+  '4': {
+    id: '4',
+    name: 'SentimentAI',
+    rank: 'gold',
+    accuracy: 65.4,
+    streak: 3,
+    predictions: 234,
+    winRate: 0.654,
+    roi: 134,
+    avatar: '🧠',
+    walletAddress: 'SentimentAI44444444444444444444444444444444',
+    endpoint: 'https://api.sentimentai.ai/predictions',
+    joinedAt: '2026-01-05T00:00:00Z',
+    reputationScore: 1500,
+    totalWins: 153,
+    totalLosses: 81,
+    bestStreak: 9,
+    currentStreak: 3,
+  },
+  '5': {
+    id: '5',
+    name: 'ChartWhisperer',
+    rank: 'gold',
+    accuracy: 62.1,
+    streak: 4,
+    predictions: 189,
+    winRate: 0.621,
+    roi: 112,
+    avatar: '📊',
+    walletAddress: 'ChartWhisperer55555555555555555555555555555',
+    endpoint: 'https://api.chartwhisperer.ai/predictions',
+    joinedAt: '2026-01-10T00:00:00Z',
+    reputationScore: 1350,
+    totalWins: 117,
+    totalLosses: 72,
+    bestStreak: 11,
+    currentStreak: 4,
+  },
+  '6': {
+    id: '6',
+    name: 'NewsHawk',
+    rank: 'silver',
+    accuracy: 58.7,
+    streak: 2,
+    predictions: 156,
+    winRate: 0.587,
+    roi: 89,
+    avatar: '📰',
+    walletAddress: 'NewsHawk66666666666666666666666666666666666',
+    endpoint: 'https://api.newshawk.ai/predictions',
+    joinedAt: '2026-01-20T00:00:00Z',
+    reputationScore: 950,
+    totalWins: 92,
+    totalLosses: 64,
+    bestStreak: 6,
+    currentStreak: 2,
+  },
+  '7': {
+    id: '7',
+    name: 'MoonShot',
+    rank: 'silver',
+    accuracy: 55.3,
+    streak: 1,
+    predictions: 98,
+    winRate: 0.553,
+    roi: 67,
+    avatar: '🚀',
+    walletAddress: 'MoonShot7777777777777777777777777777777777',
+    endpoint: 'https://api.moonshot.ai/predictions',
+    joinedAt: '2026-01-25T00:00:00Z',
+    reputationScore: 750,
+    totalWins: 54,
+    totalLosses: 44,
+    bestStreak: 5,
+    currentStreak: 1,
+  },
+  '8': {
+    id: '8',
+    name: 'DipBuyer',
+    rank: 'bronze',
+    accuracy: 52.1,
+    streak: 0,
+    predictions: 76,
+    winRate: 0.521,
+    roi: 34,
+    avatar: '💎',
+    walletAddress: 'DipBuyer88888888888888888888888888888888888',
+    endpoint: 'https://api.dipbuyer.ai/predictions',
+    joinedAt: '2026-01-28T00:00:00Z',
+    reputationScore: 450,
+    totalWins: 40,
+    totalLosses: 36,
+    bestStreak: 4,
+    currentStreak: 0,
+  },
 };
 
 const mockPredictions: PredictionHistory[] = [
@@ -63,17 +198,21 @@ export default function AgentProfilePage() {
   const params = useParams();
   const [activeTab, setActiveTab] = useState('overview');
   const [copied, setCopied] = useState(false);
+  
+  // Get agent ID from URL params
+  const agentId = params?.id as string;
+  const agent = agents[agentId] || agents['1']; // Fallback to first agent
 
   const handleCopyAddress = () => {
-    if (mockAgent.walletAddress) {
-      navigator.clipboard.writeText(mockAgent.walletAddress);
+    if (agent.walletAddress) {
+      navigator.clipboard.writeText(agent.walletAddress);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  const winRate = mockAgent.totalWins && mockAgent.totalLosses 
-    ? (mockAgent.totalWins / (mockAgent.totalWins + mockAgent.totalLosses)) * 100 
+  const winRate = agent.totalWins && agent.totalLosses 
+    ? (agent.totalWins / (agent.totalWins + agent.totalLosses)) * 100 
     : 0;
 
   return (
@@ -100,20 +239,20 @@ export default function AgentProfilePage() {
               <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
               
               <div className="relative flex flex-col md:flex-row items-center md:items-start gap-8">
-                <AgentAvatar agent={mockAgent} size="xl" />
+                <AgentAvatar agent={agent} size="xl" />
                 
                 <div className="flex-1 text-center md:text-left">
                   <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
-                    <h1 className="text-4xl md:text-5xl font-bold text-white">{mockAgent.name}</h1>
-                    <RankBadge rank={mockAgent.rank} size="lg" />
+                    <h1 className="text-4xl md:text-5xl font-bold text-white">{agent.name}</h1>
+                    <RankBadge rank={agent.rank} size="lg" />
                   </div>
 
-                  {mockAgent.walletAddress && (
+                  {agent.walletAddress && (
                     <button
                       onClick={handleCopyAddress}
                       className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
                     >
-                      <span className="font-mono text-sm">{shortenAddress(mockAgent.walletAddress)}</span>
+                      <span className="font-mono text-sm">{shortenAddress(agent.walletAddress)}</span>
                       {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                     </button>
                   )}
@@ -121,21 +260,21 @@ export default function AgentProfilePage() {
                   <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-6">
                     <div className="flex items-center gap-2">
                       <Trophy className="w-5 h-5 text-yellow-400" />
-                      <span className="text-2xl font-bold">#{formatNumber(mockAgent.reputationScore || 0)}</span>
+                      <span className="text-2xl font-bold">#{formatNumber(agent.reputationScore || 0)}</span>
                       <span className="text-gray-400">Reputation</span>
                     </div>
                     
                     <div className="flex items-center gap-2">
                       <Calendar className="w-5 h-5 text-blue-400" />
-                      <span className="text-gray-400">Joined {new Date(mockAgent.joinedAt || '').toLocaleDateString()}</span>
+                      <span className="text-gray-400">Joined {new Date(agent.joinedAt || '').toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="hidden lg:block">
                   <WinLossRatio 
-                    wins={mockAgent.totalWins || 0} 
-                    losses={mockAgent.totalLosses || 0} 
+                    wins={agent.totalWins || 0} 
+                    losses={agent.totalLosses || 0} 
                     size={140}
                   />
                 </div>
@@ -144,7 +283,7 @@ export default function AgentProfilePage() {
               {/* Rank Progress */}
               <div className="mt-8">
                 <RankProgressBar 
-                  currentRank={mockAgent.rank} 
+                  currentRank={agent.rank} 
                   progress={85} 
                 />
               </div>
@@ -156,7 +295,7 @@ export default function AgentProfilePage() {
             <StaggerItem>
               <StatCard
                 label="Accuracy"
-                value={`${mockAgent.accuracy}%`}
+                value={`${agent.accuracy}%`}
                 icon={<Target className="w-5 h-5" />}
                 color="purple"
                 change={5.2}
@@ -176,17 +315,17 @@ export default function AgentProfilePage() {
             <StaggerItem>
               <StatCard
                 label="Current Streak"
-                value={mockAgent.currentStreak || 0}
+                value={agent.currentStreak || 0}
                 icon={<Flame className="w-5 h-5" />}
                 color="orange"
-                subValue={`Best: ${mockAgent.bestStreak || 0}`}
+                subValue={`Best: ${agent.bestStreak || 0}`}
               />
             </StaggerItem>
             
             <StaggerItem>
               <StatCard
                 label="Total ROI"
-                value={`+${mockAgent.roi}%`}
+                value={`+${agent.roi}%`}
                 icon={<TrendingUp className="w-5 h-5" />}
                 color="blue"
                 change={12.5}

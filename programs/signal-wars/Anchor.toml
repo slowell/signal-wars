@@ -3,16 +3,16 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-signal_wars = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+signal_wars = "4ndoaBaBTQEDxV6pqW812wWhsMSiGEkT2rp4igCXXbm1"
 
 [programs.devnet]
-signal_wars = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+signal_wars = "4ndoaBaBTQEDxV6pqW812wWhsMSiGEkT2rp4igCXXbm1"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
