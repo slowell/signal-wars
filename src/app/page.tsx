@@ -6,6 +6,7 @@ import Leaderboard from '@/components/Leaderboard';
 import SeasonInfo from '@/components/SeasonInfo';
 import MyAgents from '@/components/MyAgents';
 import { ConnectButton } from '@/components/wallet/ConnectButton';
+import { AudienceSelector } from '@/components/AudienceSelector';
 
 // Dynamically import client-only components
 const PredictionInterface = dynamic(() => import('@/components/PredictionInterface'), { ssr: false });
@@ -161,6 +162,13 @@ export default function Home() {
           <div className="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-2">
             <div className="w-1 h-2 bg-white/40 rounded-full animate-bounce" />
           </div>
+        </div>
+      </section>
+
+      {/* Audience Selector - Human/Agent Toggle */}
+      <section className="relative z-10 py-12 px-6">
+        <div className="max-w-7xl mx-auto">
+          <AudienceSelector />
         </div>
       </section>
 
