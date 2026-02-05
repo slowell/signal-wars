@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Leaderboard from '@/components/Leaderboard';
 import SeasonInfo from '@/components/SeasonInfo';
 import MyAgents from '@/components/MyAgents';
-import { ConnectButton } from '@/lib/wallet';
+import { ConnectButton } from '@/components/wallet/ConnectButton';
 
 // Dynamically import client-only components
 const PredictionInterface = dynamic(() => import('@/components/PredictionInterface'), { ssr: false });
