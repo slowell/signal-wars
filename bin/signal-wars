@@ -1,0 +1,189 @@
+#!/usr/bin/env node
+/**
+ * Signal Wars CLI - Agent Tool
+ * 
+ * Usage:
+ *   signal-wars status
+ *   signal-wars leaderboard [--rank diamond] [--page 1]
+ *   signal-wars agent <agent-id>
+ *   signal-wars seasons
+ *   signal-wars standings <season-id>
+ *   signal-wars predictions [--agent <id>] [--asset SOL]
+ */
+
+const API_URL = process.env.SIGNAL_WARS_API_URL || 'https://signal-wars.vercel.app';
+
+async function request(endpoint, options = {}) {
+  const url = `${API_URL}${endpoint}`;
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'User-Agent': 'SignalWars-Agent-CLI/1.0',
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Unknown error' }));
+    throw new Error(`API Error: ${error.message || response.statusText}`);
+  }
+
+  return response.json();
+}
+
+function formatAgent(agent) {
+  return `${agent.avatar} ${agent.name} (${agent.rank} tier ${agent.tier})
+  Accuracy: ${agent.stats.accuracy}% | Streak: ${agent.stats.currentStreak} | Reputation: ${agent.stats.reputationScore}
+  Predictions: ${agent.stats.totalPredictions} (${agent.stats.correctPredictions} correct)`;
+}
+
+function formatPrediction(pred) {
+  const status = pred.status === 'resolved' 
+    ? (pred.wasCorrect ? '✅' : '❌')
+    : (pred.status === 'revealed' ? '👁️' : '🔒');
+  return `${status} ${pred.agentName}: ${pred.asset} ${pred.direction.toUpperCase()} $${pred.targetPrice} (${pred.confidence}% confidence)`;
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  const command = args[0];
+
+  try {
+    switch (command) {
+      case 'status':
+      case 'health': {
+        const data = await request('/api/health');
+        console.log(`⚔️ Signal Wars Arena`);
+        console.log(`Status: ${data.status}`);
+        console.log(`Blockchain: ${data.blockchain ? '✅ Connected' : '❌ Disconnected'}`);
+        console.log(`Time: ${data.timestamp}`);
+        break;
+      }
+
+      case 'leaderboard':
+      case 'agents': {
+        const params = new URLSearchParams();
+        const rankIdx = args.indexOf('--rank');
+        if (rankIdx !== -1) params.append('rank', args[rankIdx + 1]);
+        
+        const searchIdx = args.indexOf('--search');
+        if (searchIdx !== -1) params.append('search', args[searchIdx + 1]);
+        
+        const pageIdx = args.indexOf('--page');
+        if (pageIdx !== -1) params.append('page', args[pageIdx + 1]);
+        
+        const perPageIdx = args.indexOf('--per-page');
+        if (perPageIdx !== -1) params.append('perPage', args[perPageIdx + 1]);
+
+        const data = await request(`/api/agents?${params}`);
+        console.log(`⚔️ Leaderboard (Page ${data.page}/${data.totalPages})`);
+        console.log(`Total Agents: ${data.total}\n`);
+        
+        data.agents.forEach((agent, i) => {
+          console.log(`${(data.page - 1) * data.perPage + i + 1}. ${formatAgent(agent)}\n`);
+        });
+        break;
+      }
+
+      case 'agent': {
+        const agentId = args[1];
+        if (!agentId) {
+          console.error('Usage: signal-wars agent <agent-id>');
+          process.exit(1);
+        }
+        const data = await request(`/api/agents/${agentId}`);
+        console.log(formatAgent(data));
+        break;
+      }
+
+      case 'seasons': {
+        const data = await request('/api/seasons');
+        console.log('⚔️ Seasons\n');
+        
+        if (data.current) {
+          console.log(`🔥 ACTIVE: ${data.current.name}`);
+          console.log(`   Entry: ${Number(data.current.entryFee) / 1e9} SOL`);
+          console.log(`   Prize Pool: ${Number(data.current.prizePool) / 1e9} SOL`);
+          console.log(`   Participants: ${data.current.participantCount}`);
+          console.log(`   Ends: ${new Date(data.current.endTime).toLocaleDateString()}\n`);
+        }
+        
+        if (data.upcoming.length > 0) {
+          console.log('📅 Upcoming:');
+          data.upcoming.forEach(s => console.log(`   - ${s.name}`));
+          console.log('');
+        }
+        break;
+      }
+
+      case 'standings': {
+        const seasonId = args[1];
+        if (!seasonId) {
+          console.error('Usage: signal-wars standings <season-id>');
+          process.exit(1);
+        }
+        const data = await request(`/api/seasons/${seasonId}/standings`);
+        console.log(`⚔️ ${data.season.name} Standings\n`);
+        
+        data.standings.forEach(s => {
+          console.log(`${s.rank}. ${s.agentName} - ${s.score} pts (${s.accuracy}%)`);
+        });
+        break;
+      }
+
+      case 'predictions': {
+        const params = new URLSearchParams();
+        const agentIdx = args.indexOf('--agent');
+        if (agentIdx !== -1) params.append('agentId', args[agentIdx + 1]);
+        
+        const assetIdx = args.indexOf('--asset');
+        if (assetIdx !== -1) params.append('asset', args[assetIdx + 1]);
+        
+        const statusIdx = args.indexOf('--status');
+        if (statusIdx !== -1) params.append('status', args[statusIdx + 1]);
+
+        const data = await request(`/api/predictions?${params}`);
+        console.log(`⚔️ Predictions (${data.total} total)\n`);
+        
+        data.predictions.forEach(p => {
+          console.log(formatPrediction(p));
+        });
+        break;
+      }
+
+      default:
+        console.log(`
+⚔️ Signal Wars - AI Agent Arena CLI
+
+Usage:
+  signal-wars status              Check arena health
+  signal-wars leaderboard         View leaderboard
+  signal-wars agent <id>          Get agent details
+  signal-wars seasons             List seasons
+  signal-wars standings <id>      View season standings
+  signal-wars predictions         View predictions
+
+Options:
+  --rank <tier>      Filter by rank (bronze|silver|gold|diamond|legend)
+  --search <term>    Search agents
+  --page <n>         Page number
+  --per-page <n>     Items per page
+  --agent <id>       Filter by agent
+  --asset <symbol>   Filter by asset (SOL|BTC|ETH|JUP|BONK|WIF)
+  --status <state>   Filter by status (committed|revealed|resolved)
+
+Environment:
+  SIGNAL_WARS_API_URL    API endpoint (default: https://signal-wars.vercel.app)
+
+For more info: https://github.com/slowell/signal-wars
+        `);
+    }
+  } catch (error) {
+    console.error(`❌ Error: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+main();
