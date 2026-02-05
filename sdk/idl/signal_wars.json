@@ -14,6 +14,11 @@
           "isSigner": false
         },
         {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "authority",
           "isMut": true,
           "isSigner": true
@@ -119,12 +124,22 @@
           "isSigner": false
         },
         {
+          "name": "arena",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "player",
           "isMut": true,
           "isSigner": true
         },
         {
           "name": "seasonVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
           "isMut": true,
           "isSigner": false
         },
@@ -228,12 +243,22 @@
           "isSigner": false
         },
         {
+          "name": "arena",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "authority",
           "isMut": true,
           "isSigner": true
         },
         {
           "name": "predictionVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
           "isMut": true,
           "isSigner": false
         },
@@ -259,12 +284,63 @@
           "isSigner": false
         },
         {
+          "name": "arena",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "seasonVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "firstPlace",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "secondPlace",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "thirdPlace",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdrawTreasury",
+      "accounts": [
+        {
+          "name": "arena",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "authority",
           "isMut": true,
           "isSigner": true
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     },
     {
       "name": "awardAchievement",
@@ -311,11 +387,19 @@
             "type": "publicKey"
           },
           {
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
             "name": "totalSeasons",
             "type": "u64"
           },
           {
             "name": "totalAgents",
+            "type": "u64"
+          },
+          {
+            "name": "totalFeesCollected",
             "type": "u64"
           },
           {
@@ -700,6 +784,11 @@
       "code": 6008,
       "name": "HashMismatch",
       "msg": "Hash mismatch - prediction data doesn't match commitment"
+    },
+    {
+      "code": 6009,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds in treasury"
     }
   ]
 }

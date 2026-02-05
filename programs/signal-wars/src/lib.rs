@@ -1,18 +1,26 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::hash;
 
+// Signal Wars - AI Agent Prediction Arena
+// Fee Structure:
+// - Entry fee split: prize_pool_bps% to prize pool, (10000 - prize_pool_bps)% to treasury
+// - Lost stakes go to treasury (when prediction is wrong)
+// - Treasury can be withdrawn by authority
+
 declare_id!("Gck8TTMDXoqhcXDUYDRzYbBu4shvbAUUrHTBafuGQCSz"); // Devnet deployment
 
 #[program]
 pub mod signal_wars {
     use super::*;
 
-    /// Initialize the global arena state
+    /// Initialize the global arena state with treasury
     pub fn initialize_arena(ctx: Context<InitializeArena>) -> Result<()> {
         let arena = &mut ctx.accounts.arena;
         arena.authority = ctx.accounts.authority.key();
+        arena.treasury = ctx.accounts.treasury.key();
         arena.total_seasons = 0;
         arena.total_agents = 0;
+        arena.total_fees_collected = 0;
         arena.bump = *ctx.bumps.get("arena").unwrap();
         Ok(())
     }
@@ -87,11 +95,12 @@ pub mod signal_wars {
         Ok(())
     }
 
-    /// Enter a season by paying entry fee
+    /// Enter a season by paying entry fee (split between prize pool and treasury)
     pub fn enter_season(ctx: Context<EnterSeason>) -> Result<()> {
         let season = &mut ctx.accounts.season;
         let entry = &mut ctx.accounts.season_entry;
         let agent = &mut ctx.accounts.agent;
+        let arena = &mut ctx.accounts.arena;
         
         require!(season.status == SeasonStatus::Active, ErrorCode::SeasonNotActive);
         require!(
@@ -99,7 +108,12 @@ pub mod signal_wars {
             ErrorCode::SeasonEnded
         );
         
-        // Transfer entry fee to season vault
+        // Calculate fee split
+        let platform_fee = (season.entry_fee * (10000 - season.prize_pool_bps) as u64) / 10000;
+        let prize_contribution = season.entry_fee - platform_fee;
+        
+        // Transfer entry fee from player
+        let transfer_amount = season.entry_fee;
         anchor_lang::system_program::transfer(
             CpiContext::new(
                 ctx.accounts.system_program.to_account_info(),
@@ -108,8 +122,15 @@ pub mod signal_wars {
                     to: ctx.accounts.season_vault.to_account_info(),
                 },
             ),
-            season.entry_fee,
+            transfer_amount,
         )?;
+        
+        // Move platform fee to treasury
+        if platform_fee > 0 {
+            **ctx.accounts.season_vault.to_account_info().lamports.borrow_mut() -= platform_fee;
+            **ctx.accounts.treasury.to_account_info().lamports.borrow_mut() += platform_fee;
+            arena.total_fees_collected += platform_fee;
+        }
         
         entry.season_id = season.id;
         entry.agent = agent.key();
@@ -121,12 +142,14 @@ pub mod signal_wars {
         entry.bump = *ctx.bumps.get("season_entry").unwrap();
         
         season.total_entries += 1;
-        season.total_pool += season.entry_fee;
+        season.total_pool += prize_contribution;
         
         emit!(SeasonEntered {
             season_id: season.id,
             agent: agent.key(),
             player: entry.player,
+            platform_fee,
+            prize_contribution,
         });
         
         Ok(())
@@ -170,6 +193,7 @@ pub mod signal_wars {
             prediction: prediction.key(),
             agent: agent.key(),
             season_id: season.id,
+            stake_amount,
         });
         
         Ok(())
@@ -206,6 +230,7 @@ pub mod signal_wars {
     }
 
     /// Resolve prediction (called by oracle/authority)
+    /// Fee structure: Wrong prediction = stake goes to treasury
     pub fn resolve_prediction(
         ctx: Context<ResolvePrediction>,
         was_correct: bool,
@@ -213,6 +238,7 @@ pub mod signal_wars {
         let prediction = &mut ctx.accounts.prediction;
         let agent = &mut ctx.accounts.agent;
         let entry = &mut ctx.accounts.season_entry;
+        let arena = &mut ctx.accounts.arena;
         
         require!(
             prediction.status == PredictionStatus::Revealed,
@@ -237,20 +263,22 @@ pub mod signal_wars {
             }
             
             update_rank(agent)?;
+            
+            // Return stake to player on correct prediction
+            let stake_return = prediction.stake_amount;
+            if stake_return > 0 {
+                **ctx.accounts.prediction_vault.to_account_info().lamports.borrow_mut() -= stake_return;
+                **ctx.accounts.player.to_account_info().lamports.borrow_mut() += stake_return;
+            }
         } else {
+            // Wrong prediction: stake goes to treasury
             agent.streak = 0;
-        }
-        
-        // Return stake if correct (1x payout for now)
-        let stake_return = if was_correct {
-            prediction.stake_amount // Return original stake on win
-        } else {
-            0 // Lose stake on loss
-        };
-        
-        if stake_return > 0 {
-            **ctx.accounts.prediction_vault.to_account_info().lamports.borrow_mut() -= stake_return;
-            **ctx.accounts.player.to_account_info().lamports.borrow_mut() += stake_return;
+            let lost_stake = prediction.stake_amount;
+            if lost_stake > 0 {
+                **ctx.accounts.prediction_vault.to_account_info().lamports.borrow_mut() -= lost_stake;
+                **ctx.accounts.treasury.to_account_info().lamports.borrow_mut() += lost_stake;
+                arena.total_fees_collected += lost_stake;
+            }
         }
         
         emit!(PredictionResolved {
@@ -258,12 +286,13 @@ pub mod signal_wars {
             agent: agent.key(),
             was_correct,
             score_earned: if was_correct { entry.score } else { 0 },
+            stake_transferred: if was_correct { prediction.stake_amount } else { 0 },
         });
         
         Ok(())
     }
 
-    /// Award achievement badge (NFT minting logic would go here)
+    /// Award achievement badge
     pub fn award_achievement(
         ctx: Context<AwardAchievement>,
         achievement_type: AchievementType,
@@ -296,9 +325,11 @@ pub mod signal_wars {
         Ok(())
     }
 
-    /// Distribute prizes at season end
+    /// Distribute prizes at season end to top 3 performers
+    /// Prize distribution: 1st = 50%, 2nd = 30%, 3rd = 20% of prize pool
     pub fn distribute_prizes(ctx: Context<DistributePrizes>) -> Result<()> {
         let season = &mut ctx.accounts.season;
+        let arena = &mut ctx.accounts.arena;
         
         require!(
             Clock::get()?.unix_timestamp >= season.end_time,
@@ -309,14 +340,54 @@ pub mod signal_wars {
             ErrorCode::InvalidSeasonStatus
         );
         
-        season.status = SeasonStatus::Completed;
+        let prize_pool = season.total_pool;
         
-        // Prize distribution logic would go here
-        // Top 3 entries get split of prize pool based on prize_pool_bps
+        // Prize split: 50% / 30% / 20%
+        let first_place_prize = prize_pool * 50 / 100;
+        let second_place_prize = prize_pool * 30 / 100;
+        let third_place_prize = prize_pool * 20 / 100;
+        
+        // Transfer prizes to winners
+        if first_place_prize > 0 && ctx.accounts.first_place.data_len() > 0 {
+            **ctx.accounts.season_vault.to_account_info().lamports.borrow_mut() -= first_place_prize;
+            **ctx.accounts.first_place.to_account_info().lamports.borrow_mut() += first_place_prize;
+        }
+        
+        if second_place_prize > 0 && ctx.accounts.second_place.data_len() > 0 {
+            **ctx.accounts.season_vault.to_account_info().lamports.borrow_mut() -= second_place_prize;
+            **ctx.accounts.second_place.to_account_info().lamports.borrow_mut() += second_place_prize;
+        }
+        
+        if third_place_prize > 0 && ctx.accounts.third_place.data_len() > 0 {
+            **ctx.accounts.season_vault.to_account_info().lamports.borrow_mut() -= third_place_prize;
+            **ctx.accounts.third_place.to_account_info().lamports.borrow_mut() += third_place_prize;
+        }
+        
+        season.status = SeasonStatus::Completed;
         
         emit!(PrizesDistributed {
             season_id: season.id,
-            total_pool: season.total_pool,
+            total_pool: prize_pool,
+            first_place: first_place_prize,
+            second_place: second_place_prize,
+            third_place: third_place_prize,
+        });
+        
+        Ok(())
+    }
+
+    /// Withdraw accumulated treasury fees (authority only)
+    pub fn withdraw_treasury(ctx: Context<WithdrawTreasury>, amount: u64) -> Result<()> {
+        let treasury_balance = ctx.accounts.treasury.lamports();
+        require!(amount <= treasury_balance, ErrorCode::InsufficientFunds);
+        
+        **ctx.accounts.treasury.to_account_info().lamports.borrow_mut() -= amount;
+        **ctx.accounts.authority.to_account_info().lamports.borrow_mut() += amount;
+        
+        emit!(TreasuryWithdrawal {
+            authority: ctx.accounts.authority.key(),
+            amount,
+            remaining_balance: treasury_balance - amount,
         });
         
         Ok(())
@@ -358,6 +429,9 @@ pub struct InitializeArena<'info> {
         bump
     )]
     pub arena: Account<'info, Arena>,
+    /// CHECK: Treasury account for fee collection (can be any account)
+    #[account(mut)]
+    pub treasury: AccountInfo<'info>,
     #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -412,6 +486,8 @@ pub struct EnterSeason<'info> {
     #[account(mut)]
     pub agent: Account<'info, Agent>,
     #[account(mut)]
+    pub arena: Account<'info, Arena>,
+    #[account(mut)]
     pub player: Signer<'info>,
     /// CHECK: Season vault for entry fees
     #[account(
@@ -420,6 +496,9 @@ pub struct EnterSeason<'info> {
         bump
     )]
     pub season_vault: AccountInfo<'info>,
+    /// CHECK: Treasury account for fee collection
+    #[account(mut, address = arena.treasury)]
+    pub treasury: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -471,6 +550,8 @@ pub struct ResolvePrediction<'info> {
     #[account(mut)]
     pub season_entry: Account<'info, SeasonEntry>,
     #[account(mut)]
+    pub arena: Account<'info, Arena>,
+    #[account(mut)]
     pub authority: Signer<'info>,
     #[account(
         mut,
@@ -478,6 +559,9 @@ pub struct ResolvePrediction<'info> {
         bump
     )]
     pub prediction_vault: Account<'info, PredictionVault>,
+    /// CHECK: Treasury for collecting lost stakes
+    #[account(mut, address = arena.treasury)]
+    pub treasury: AccountInfo<'info>,
     /// CHECK: Player to receive stake return
     #[account(mut)]
     pub player: AccountInfo<'info>,
@@ -505,6 +589,35 @@ pub struct DistributePrizes<'info> {
     #[account(mut)]
     pub season: Account<'info, Season>,
     #[account(mut)]
+    pub arena: Account<'info, Arena>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    /// CHECK: Season vault holding prize pool
+    #[account(
+        mut,
+        seeds = [b"vault", season.key().as_ref()],
+        bump
+    )]
+    pub season_vault: AccountInfo<'info>,
+    /// CHECK: First place winner
+    #[account(mut)]
+    pub first_place: AccountInfo<'info>,
+    /// CHECK: Second place winner
+    #[account(mut)]
+    pub second_place: AccountInfo<'info>,
+    /// CHECK: Third place winner
+    #[account(mut)]
+    pub third_place: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+pub struct WithdrawTreasury<'info> {
+    #[account(mut, has_one = authority)]
+    pub arena: Account<'info, Arena>,
+    /// CHECK: Treasury account
+    #[account(mut, address = arena.treasury)]
+    pub treasury: AccountInfo<'info>,
+    #[account(mut)]
     pub authority: Signer<'info>,
 }
 
@@ -512,13 +625,15 @@ pub struct DistributePrizes<'info> {
 #[account]
 pub struct Arena {
     pub authority: Pubkey,
+    pub treasury: Pubkey,        // Fee collection address
     pub total_seasons: u64,
     pub total_agents: u64,
+    pub total_fees_collected: u64,
     pub bump: u8,
 }
 
 impl Arena {
-    pub const SIZE: usize = 32 + 8 + 8 + 1;
+    pub const SIZE: usize = 32 + 32 + 8 + 8 + 8 + 1;
 }
 
 #[account]
@@ -547,9 +662,9 @@ pub struct Season {
     pub entry_fee: u64,
     pub start_time: i64,
     pub end_time: i64,
-    pub prize_pool_bps: u16,
+    pub prize_pool_bps: u16,  // % of entry fee that goes to prize pool
     pub total_entries: u64,
-    pub total_pool: u64,
+    pub total_pool: u64,      // Prize pool amount
     pub status: SeasonStatus,
     pub bump: u8,
 }
@@ -671,6 +786,8 @@ pub enum ErrorCode {
     InvalidPredictionStatus,
     #[msg("Hash mismatch - prediction data doesn't match commitment")]
     HashMismatch,
+    #[msg("Insufficient funds in treasury")]
+    InsufficientFunds,
 }
 
 // Events
@@ -694,6 +811,8 @@ pub struct SeasonEntered {
     pub season_id: u64,
     pub agent: Pubkey,
     pub player: Pubkey,
+    pub platform_fee: u64,
+    pub prize_contribution: u64,
 }
 
 #[event]
@@ -701,6 +820,7 @@ pub struct PredictionSubmitted {
     pub prediction: Pubkey,
     pub agent: Pubkey,
     pub season_id: u64,
+    pub stake_amount: u64,
 }
 
 #[event]
@@ -715,6 +835,7 @@ pub struct PredictionResolved {
     pub agent: Pubkey,
     pub was_correct: bool,
     pub score_earned: u64,
+    pub stake_transferred: u64,
 }
 
 #[event]
@@ -727,4 +848,14 @@ pub struct AchievementAwarded {
 pub struct PrizesDistributed {
     pub season_id: u64,
     pub total_pool: u64,
+    pub first_place: u64,
+    pub second_place: u64,
+    pub third_place: u64,
+}
+
+#[event]
+pub struct TreasuryWithdrawal {
+    pub authority: Pubkey,
+    pub amount: u64,
+    pub remaining_balance: u64,
 }
