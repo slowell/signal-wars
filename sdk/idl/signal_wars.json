@@ -7,51 +7,699 @@
   "instructions": [
     {
       "name": "initializeArena",
-      "accounts": [],
+      "accounts": [
+        {
+          "name": "arena",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
       "args": []
     },
     {
       "name": "registerAgent",
-      "accounts": [],
-      "args": []
+      "accounts": [
+        {
+          "name": "agent",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "arena",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "endpoint",
+          "type": "string"
+        }
+      ]
     },
     {
-      "name": "initializeSeason",
-      "accounts": [],
-      "args": []
+      "name": "createSeason",
+      "accounts": [
+        {
+          "name": "season",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "arena",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "entryFee",
+          "type": "u64"
+        },
+        {
+          "name": "durationDays",
+          "type": "u8"
+        },
+        {
+          "name": "prizePoolBps",
+          "type": "u16"
+        }
+      ]
     },
     {
       "name": "enterSeason",
-      "accounts": [],
+      "accounts": [
+        {
+          "name": "season",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "seasonEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "agent",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "seasonVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
       "args": []
     },
     {
       "name": "submitPrediction",
-      "accounts": [],
-      "args": []
+      "accounts": [
+        {
+          "name": "season",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "agent",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "prediction",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "predictionVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "predictionHash",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "stakeAmount",
+          "type": "u64"
+        }
+      ]
     },
     {
       "name": "revealPrediction",
-      "accounts": [],
-      "args": []
+      "accounts": [
+        {
+          "name": "prediction",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "agent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "predictionData",
+          "type": "string"
+        }
+      ]
     },
     {
       "name": "resolvePrediction",
-      "accounts": [],
-      "args": []
+      "accounts": [
+        {
+          "name": "prediction",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "agent",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "seasonEntry",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "predictionVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "wasCorrect",
+          "type": "bool"
+        }
+      ]
     },
     {
       "name": "distributePrizes",
-      "accounts": [],
+      "accounts": [
+        {
+          "name": "season",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
       "args": []
     },
     {
       "name": "awardAchievement",
-      "accounts": [],
-      "args": []
+      "accounts": [
+        {
+          "name": "agent",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "achievement",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "achievementType",
+          "type": {
+            "defined": "AchievementType"
+          }
+        }
+      ]
     }
   ],
-  "accounts": [],
-  "types": [],
-  "errors": []
+  "accounts": [
+    {
+      "name": "Arena",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "totalSeasons",
+            "type": "u64"
+          },
+          {
+            "name": "totalAgents",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Agent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "endpoint",
+            "type": "string"
+          },
+          {
+            "name": "totalPredictions",
+            "type": "u64"
+          },
+          {
+            "name": "correctPredictions",
+            "type": "u64"
+          },
+          {
+            "name": "streak",
+            "type": "u16"
+          },
+          {
+            "name": "bestStreak",
+            "type": "u16"
+          },
+          {
+            "name": "rank",
+            "type": {
+              "defined": "Rank"
+            }
+          },
+          {
+            "name": "reputationScore",
+            "type": "u32"
+          },
+          {
+            "name": "joinedAt",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Season",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "entryFee",
+            "type": "u64"
+          },
+          {
+            "name": "startTime",
+            "type": "i64"
+          },
+          {
+            "name": "endTime",
+            "type": "i64"
+          },
+          {
+            "name": "prizePoolBps",
+            "type": "u16"
+          },
+          {
+            "name": "totalEntries",
+            "type": "u64"
+          },
+          {
+            "name": "totalPool",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": "SeasonStatus"
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SeasonEntry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "seasonId",
+            "type": "u64"
+          },
+          {
+            "name": "agent",
+            "type": "publicKey"
+          },
+          {
+            "name": "player",
+            "type": "publicKey"
+          },
+          {
+            "name": "score",
+            "type": "u64"
+          },
+          {
+            "name": "predictionsMade",
+            "type": "u64"
+          },
+          {
+            "name": "predictionsCorrect",
+            "type": "u64"
+          },
+          {
+            "name": "rank",
+            "type": "u16"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Prediction",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "agent",
+            "type": "publicKey"
+          },
+          {
+            "name": "seasonId",
+            "type": "u64"
+          },
+          {
+            "name": "predictionHash",
+            "type": {
+              "array": ["u8", 32]
+            }
+          },
+          {
+            "name": "predictionData",
+            "type": "string"
+          },
+          {
+            "name": "stakeAmount",
+            "type": "u64"
+          },
+          {
+            "name": "submittedAt",
+            "type": "i64"
+          },
+          {
+            "name": "revealedAt",
+            "type": "i64"
+          },
+          {
+            "name": "resolvedAt",
+            "type": "i64"
+          },
+          {
+            "name": "wasCorrect",
+            "type": "bool"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": "PredictionStatus"
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Achievement",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "agent",
+            "type": "publicKey"
+          },
+          {
+            "name": "achievementType",
+            "type": {
+              "defined": "AchievementType"
+            }
+          },
+          {
+            "name": "awardedAt",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PredictionVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "Rank",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Bronze"
+          },
+          {
+            "name": "Silver"
+          },
+          {
+            "name": "Gold"
+          },
+          {
+            "name": "Diamond"
+          },
+          {
+            "name": "Legend"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SeasonStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Completed"
+          },
+          {
+            "name": "Cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PredictionStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Committed"
+          },
+          {
+            "name": "Revealed"
+          },
+          {
+            "name": "Resolved"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AchievementType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "FirstWin"
+          },
+          {
+            "name": "Streak3"
+          },
+          {
+            "name": "Streak5"
+          },
+          {
+            "name": "Streak10"
+          },
+          {
+            "name": "RankSilver"
+          },
+          {
+            "name": "RankGold"
+          },
+          {
+            "name": "RankDiamond"
+          },
+          {
+            "name": "RankLegend"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "NameTooLong",
+      "msg": "Name too long"
+    },
+    {
+      "code": 6001,
+      "name": "EndpointTooLong",
+      "msg": "Endpoint URL too long"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidPrizeSplit",
+      "msg": "Invalid prize split percentage"
+    },
+    {
+      "code": 6003,
+      "name": "SeasonNotActive",
+      "msg": "Season not active"
+    },
+    {
+      "code": 6004,
+      "name": "SeasonEnded",
+      "msg": "Season has ended"
+    },
+    {
+      "code": 6005,
+      "name": "SeasonNotEnded",
+      "msg": "Season not ended yet"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidSeasonStatus",
+      "msg": "Invalid season status"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidPredictionStatus",
+      "msg": "Invalid prediction status"
+    },
+    {
+      "code": 6008,
+      "name": "HashMismatch",
+      "msg": "Hash mismatch - prediction data doesn't match commitment"
+    }
+  ]
 }

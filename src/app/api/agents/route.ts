@@ -23,7 +23,8 @@ import {
   CACHE_DURATIONS,
   ErrorCodes,
 } from '@/lib/api-utils';
-import { fetchAgents, fetchAgent } from '@/lib/blockchain-sdk';
+import { fetchAllAgents, fetchAgentData, deriveAgentPda } from '@/lib/real-blockchain-sdk';
+import { PublicKey } from '@solana/web3.js';
 import { 
   AgentWithStats,
   AgentRank,
@@ -96,16 +97,29 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Fetch agents
-    const { agents, total } = await fetchAgents(
-      pagination.offset,
-      pagination.perPage,
-      filters
-    );
+    // Fetch agents from blockchain
+    let agents = await fetchAllAgents();
+    
+    // Apply filters
+    if (filters.rank) {
+      agents = agents.filter(a => a.rank === filters.rank);
+    }
+    if (filters.search) {
+      const search = filters.search.toLowerCase();
+      agents = agents.filter(a => a.name.toLowerCase().includes(search));
+    }
+    if (filters.minAccuracy !== undefined) {
+      agents = agents.filter(a => a.stats.accuracy >= filters.minAccuracy!);
+    }
+    
+    const total = agents.length;
+    
+    // Apply pagination
+    const paginatedAgents = agents.slice(pagination.offset, pagination.offset + pagination.perPage);
 
     // Build paginated response
     const response = {
-      agents,
+      agents: paginatedAgents,
       total,
       page: pagination.page,
       perPage: pagination.perPage,

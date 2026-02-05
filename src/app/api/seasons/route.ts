@@ -21,7 +21,7 @@ import {
   CACHE_DURATIONS,
   ErrorCodes,
 } from '@/lib/api-utils';
-import { fetchSeasons, fetchSeasonStandings } from '@/lib/blockchain-sdk';
+import { fetchAllSeasons } from '@/lib/real-blockchain-sdk';
 import { SeasonResponse, SeasonStandingsResponse } from '@/lib/api-types';
 
 export const dynamic = 'force-dynamic';
@@ -48,14 +48,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return applyRateLimitHeaders(response, rateLimitInfo);
     }
 
-    // Fetch seasons
-    const { current, upcoming, past } = await fetchSeasons();
+    // Fetch seasons from blockchain
+    const allSeasons = await fetchAllSeasons();
+    
+    const now = Date.now();
+    const current = allSeasons.find(s => s.startTime <= now && s.endTime > now) || null;
+    const upcoming = allSeasons.filter(s => s.startTime > now);
+    const past = allSeasons.filter(s => s.endTime <= now);
 
     // Build response
-    const response: SeasonResponse = {
-      currentSeason: current,
-      upcomingSeasons: upcoming,
-      pastSeasons: past,
+    const response = {
+      current,
+      upcoming,
+      past,
     };
 
     // Create success response with caching
