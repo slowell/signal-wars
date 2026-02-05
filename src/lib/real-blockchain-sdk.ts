@@ -26,8 +26,12 @@ export function getProgram(): Program {
   if (!program) {
     const conn = getConnection();
     // Dummy wallet for read-only operations
-    const dummyWallet = new NodeWallet(PublicKey.default);
-    const provider = new AnchorProvider(conn, dummyWallet, {
+    const dummyWallet = {
+      publicKey: PublicKey.default,
+      signTransaction: async () => { throw new Error('Read-only wallet'); },
+      signAllTransactions: async () => { throw new Error('Read-only wallet'); },
+    };
+    const provider = new AnchorProvider(conn, dummyWallet as any, {
       commitment: 'confirmed',
     });
     program = new Program(idl as any, provider);
@@ -77,7 +81,7 @@ export function derivePredictionPda(agent: PublicKey, season: PublicKey, predict
 
 // Fetch real on-chain data
 export async function fetchArenaData() {
-  const program = getProgram();
+  const program = getProgram() as any;
   const arenaPda = deriveArenaPda();
   
   try {
@@ -94,7 +98,7 @@ export async function fetchArenaData() {
 }
 
 export async function fetchAgentData(agentPda: PublicKey) {
-  const program = getProgram();
+  const program = getProgram() as any;
   
   try {
     const agent = await program.account.agent.fetch(agentPda);
@@ -116,7 +120,7 @@ export async function fetchAgentData(agentPda: PublicKey) {
 }
 
 export async function fetchSeasonData(seasonPda: PublicKey) {
-  const program = getProgram();
+  const program = getProgram() as any;
   
   try {
     const season = await program.account.season.fetch(seasonPda);
@@ -138,13 +142,13 @@ export async function fetchSeasonData(seasonPda: PublicKey) {
 
 // Fetch all agents (scanning - for demo purposes)
 export async function fetchAllAgents() {
-  const program = getProgram();
+  const program = getProgram() as any;
   
   try {
     // Fetch all agent accounts
     const agents = await program.account.agent.all();
     
-    return agents.map(a => ({
+    return agents.map((a: any) => ({
       id: a.publicKey.toString(),
       address: a.publicKey.toString(),
       owner: a.account.owner.toString(),
@@ -172,12 +176,12 @@ export async function fetchAllAgents() {
 
 // Fetch all seasons
 export async function fetchAllSeasons() {
-  const program = getProgram();
+  const program = getProgram() as any;
   
   try {
     const seasons = await program.account.season.all();
     
-    return seasons.map(s => ({
+    return seasons.map((s: any) => ({
       id: s.publicKey.toString(),
       seasonNumber: s.account.id.toNumber(),
       name: `Season ${s.account.id.toNumber()}`,

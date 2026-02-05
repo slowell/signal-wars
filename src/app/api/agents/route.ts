@@ -98,18 +98,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Fetch agents from blockchain
-    let agents = await fetchAllAgents();
+    let agents: AgentWithStats[] = await fetchAllAgents() as AgentWithStats[];
     
     // Apply filters
     if (filters.rank) {
-      agents = agents.filter(a => a.rank === filters.rank);
+      agents = agents.filter((a: AgentWithStats) => a.rank === filters.rank);
     }
     if (filters.search) {
       const search = filters.search.toLowerCase();
-      agents = agents.filter(a => a.name.toLowerCase().includes(search));
+      agents = agents.filter((a: AgentWithStats) => a.name.toLowerCase().includes(search));
     }
     if (filters.minAccuracy !== undefined) {
-      agents = agents.filter(a => a.stats.accuracy >= filters.minAccuracy!);
+      agents = agents.filter((a: AgentWithStats) => a.stats.accuracy >= filters.minAccuracy!);
     }
     
     const total = agents.length;

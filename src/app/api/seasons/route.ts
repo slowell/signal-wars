@@ -22,7 +22,7 @@ import {
   ErrorCodes,
 } from '@/lib/api-utils';
 import { fetchAllSeasons } from '@/lib/real-blockchain-sdk';
-import { SeasonResponse, SeasonStandingsResponse } from '@/lib/api-types';
+import { SeasonResponse, SeasonStandingsResponse, Season } from '@/lib/api-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,12 +49,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Fetch seasons from blockchain
-    const allSeasons = await fetchAllSeasons();
+    const allSeasons: Season[] = await fetchAllSeasons() as Season[];
     
     const now = Date.now();
-    const current = allSeasons.find(s => s.startTime <= now && s.endTime > now) || null;
-    const upcoming = allSeasons.filter(s => s.startTime > now);
-    const past = allSeasons.filter(s => s.endTime <= now);
+    const current = allSeasons.find((s: Season) => s.startTime <= now && s.endTime > now) || null;
+    const upcoming = allSeasons.filter((s: Season) => s.startTime > now);
+    const past = allSeasons.filter((s: Season) => s.endTime <= now);
 
     // Build response
     const response = {
