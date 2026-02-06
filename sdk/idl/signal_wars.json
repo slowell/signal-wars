@@ -312,6 +312,21 @@
           "name": "thirdPlace",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "firstPlaceEntry",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "secondPlaceEntry",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "thirdPlaceEntry",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -789,6 +804,21 @@
       "code": 6009,
       "name": "InsufficientFunds",
       "msg": "Insufficient funds in treasury"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidWinner",
+      "msg": "Invalid winner - not a participant in this season"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidWinnerOrder",
+      "msg": "Invalid winner order - scores not in descending order"
+    },
+    {
+      "code": 6012,
+      "name": "AlreadyEntered",
+      "msg": "Already entered this season"
     }
   ]
 }

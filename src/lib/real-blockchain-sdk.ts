@@ -9,7 +9,7 @@ import * as idl from '../../sdk/idl/signal_wars.json';
 
 // Configuration
 const RPC_ENDPOINT = process.env.SOLANA_RPC_URL || clusterApiUrl('devnet');
-const PROGRAM_ID = new PublicKey(process.env.SIGNAL_WARS_PROGRAM_ID || 'Gck8TTMDXoqhcXDUYDRzYbBu4shvbAUUrHTBafuGQCSz');
+const PROGRAM_ID = new PublicKey(process.env.SIGNAL_WARS_PROGRAM_ID || 'Eft3JE3U8HsL9JbCkyTdHfphLawBR4rMxSSa4AkCrk9S');
 
 // Global connection
 let connection: Connection | null = null;

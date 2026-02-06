@@ -108,6 +108,9 @@ pub mod signal_wars {
             ErrorCode::SeasonEnded
         );
         
+        // Note: Double-entry is prevented by PDA structure (one entry per season per agent)
+        // If entry already exists, the init constraint will fail
+        
         // Calculate fee split
         let platform_fee = (season.entry_fee * (10000 - season.prize_pool_bps) as u64) / 10000;
         let prize_contribution = season.entry_fee - platform_fee;
@@ -329,7 +332,7 @@ pub mod signal_wars {
     /// Prize distribution: 1st = 50%, 2nd = 30%, 3rd = 20% of prize pool
     pub fn distribute_prizes(ctx: Context<DistributePrizes>) -> Result<()> {
         let season = &mut ctx.accounts.season;
-        let arena = &mut ctx.accounts.arena;
+        let _arena = &mut ctx.accounts.arena;
         
         require!(
             Clock::get()?.unix_timestamp >= season.end_time,
@@ -340,6 +343,36 @@ pub mod signal_wars {
             ErrorCode::InvalidSeasonStatus
         );
         
+        // Validate winners have season entries for this season
+        require!(
+            ctx.accounts.first_place_entry.season_id == season.id,
+            ErrorCode::InvalidWinner
+        );
+        require!(
+            ctx.accounts.second_place_entry.season_id == season.id,
+            ErrorCode::InvalidWinner
+        );
+        require!(
+            ctx.accounts.third_place_entry.season_id == season.id,
+            ErrorCode::InvalidWinner
+        );
+        
+        // Validate winners are in descending score order
+        require!(
+            ctx.accounts.first_place_entry.score >= ctx.accounts.second_place_entry.score,
+            ErrorCode::InvalidWinnerOrder
+        );
+        require!(
+            ctx.accounts.second_place_entry.score >= ctx.accounts.third_place_entry.score,
+            ErrorCode::InvalidWinnerOrder
+        );
+        
+        // Validate winners have actually participated (made predictions)
+        require!(
+            ctx.accounts.first_place_entry.predictions_made > 0,
+            ErrorCode::InvalidWinner
+        );
+        
         let prize_pool = season.total_pool;
         
         // Prize split: 50% / 30% / 20%
@@ -348,17 +381,17 @@ pub mod signal_wars {
         let third_place_prize = prize_pool * 20 / 100;
         
         // Transfer prizes to winners
-        if first_place_prize > 0 && ctx.accounts.first_place.data_len() > 0 {
+        if first_place_prize > 0 {
             **ctx.accounts.season_vault.to_account_info().lamports.borrow_mut() -= first_place_prize;
             **ctx.accounts.first_place.to_account_info().lamports.borrow_mut() += first_place_prize;
         }
         
-        if second_place_prize > 0 && ctx.accounts.second_place.data_len() > 0 {
+        if second_place_prize > 0 {
             **ctx.accounts.season_vault.to_account_info().lamports.borrow_mut() -= second_place_prize;
             **ctx.accounts.second_place.to_account_info().lamports.borrow_mut() += second_place_prize;
         }
         
-        if third_place_prize > 0 && ctx.accounts.third_place.data_len() > 0 {
+        if third_place_prize > 0 {
             **ctx.accounts.season_vault.to_account_info().lamports.borrow_mut() -= third_place_prize;
             **ctx.accounts.third_place.to_account_info().lamports.borrow_mut() += third_place_prize;
         }
@@ -464,7 +497,7 @@ pub struct CreateSeason<'info> {
         bump
     )]
     pub season: Account<'info, Season>,
-    #[account(mut)]
+    #[account(mut, has_one = authority)]
     pub arena: Account<'info, Arena>,
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -588,7 +621,7 @@ pub struct AwardAchievement<'info> {
 pub struct DistributePrizes<'info> {
     #[account(mut)]
     pub season: Account<'info, Season>,
-    #[account(mut)]
+    #[account(mut, has_one = authority)]
     pub arena: Account<'info, Arena>,
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -599,15 +632,21 @@ pub struct DistributePrizes<'info> {
         bump
     )]
     pub season_vault: AccountInfo<'info>,
-    /// CHECK: First place winner
+    /// CHECK: First place winner account
     #[account(mut)]
     pub first_place: AccountInfo<'info>,
-    /// CHECK: Second place winner
+    /// CHECK: Second place winner account
     #[account(mut)]
     pub second_place: AccountInfo<'info>,
-    /// CHECK: Third place winner
+    /// CHECK: Third place winner account
     #[account(mut)]
     pub third_place: AccountInfo<'info>,
+    /// First place season entry (for validation)
+    pub first_place_entry: Account<'info, SeasonEntry>,
+    /// Second place season entry (for validation)
+    pub second_place_entry: Account<'info, SeasonEntry>,
+    /// Third place season entry (for validation)
+    pub third_place_entry: Account<'info, SeasonEntry>,
 }
 
 #[derive(Accounts)]
@@ -788,6 +827,12 @@ pub enum ErrorCode {
     HashMismatch,
     #[msg("Insufficient funds in treasury")]
     InsufficientFunds,
+    #[msg("Invalid winner - not a participant in this season")]
+    InvalidWinner,
+    #[msg("Invalid winner order - scores not in descending order")]
+    InvalidWinnerOrder,
+    #[msg("Already entered this season")]
+    AlreadyEntered,
 }
 
 // Events
