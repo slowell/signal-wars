@@ -167,6 +167,12 @@ pub mod signal_wars {
         let season = &ctx.accounts.season;
         require!(season.status == SeasonStatus::Active, ErrorCode::SeasonNotActive);
         
+        // Verify player owns the agent
+        require!(
+            ctx.accounts.agent.owner == ctx.accounts.player.key(),
+            ErrorCode::UnauthorizedAgent
+        );
+        
         let prediction = &mut ctx.accounts.prediction;
         let agent = &mut ctx.accounts.agent;
         
@@ -211,6 +217,12 @@ pub mod signal_wars {
         require!(
             prediction.status == PredictionStatus::Committed,
             ErrorCode::InvalidPredictionStatus
+        );
+        
+        // Verify player owns the prediction (via agent ownership)
+        require!(
+            ctx.accounts.agent.owner == ctx.accounts.player.key(),
+            ErrorCode::UnauthorizedPrediction
         );
         
         // Verify hash matches
@@ -582,7 +594,7 @@ pub struct ResolvePrediction<'info> {
     pub agent: Account<'info, Agent>,
     #[account(mut)]
     pub season_entry: Account<'info, SeasonEntry>,
-    #[account(mut)]
+    #[account(mut, has_one = authority)]
     pub arena: Account<'info, Arena>,
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -612,6 +624,8 @@ pub struct AwardAchievement<'info> {
         bump
     )]
     pub achievement: Account<'info, Achievement>,
+    #[account(mut, has_one = authority)]
+    pub arena: Account<'info, Arena>,
     #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -833,6 +847,10 @@ pub enum ErrorCode {
     InvalidWinnerOrder,
     #[msg("Already entered this season")]
     AlreadyEntered,
+    #[msg("Unauthorized - not the agent owner")]
+    UnauthorizedAgent,
+    #[msg("Unauthorized - not the prediction owner")]
+    UnauthorizedPrediction,
 }
 
 // Events

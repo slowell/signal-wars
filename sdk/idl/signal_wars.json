@@ -371,6 +371,11 @@
           "isSigner": false
         },
         {
+          "name": "arena",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "authority",
           "isMut": true,
           "isSigner": true
@@ -819,6 +824,16 @@
       "code": 6012,
       "name": "AlreadyEntered",
       "msg": "Already entered this season"
+    },
+    {
+      "code": 6013,
+      "name": "UnauthorizedAgent",
+      "msg": "Unauthorized - not the agent owner"
+    },
+    {
+      "code": 6014,
+      "name": "UnauthorizedPrediction",
+      "msg": "Unauthorized - not the prediction owner"
     }
   ]
 }
