@@ -1,6 +1,6 @@
 const { Connection, PublicKey } = require('@solana/web3.js');
 
-const PROGRAM_ID = new PublicKey('Mo4812FaCAApnh7qKXBkv2WjXeHHyrZsysPbw12UgCj');
+const PROGRAM_ID = new PublicKey('9s5gawgG2KJy7kofoxhRAve4zL6S7Y8dFuECtpbbBWJZ');
 const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
 
 async function verifyProgram() {

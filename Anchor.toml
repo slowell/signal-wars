@@ -3,10 +3,10 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-signal_wars = "CwiosQauBnxPHVnpTBS4LPTSSfQudsCN9wVTZJ31aZFV"
+signal_wars = "9s5gawgG2KJy7kofoxhRAve4zL6S7Y8dFuECtpbbBWJZ"
 
 [programs.devnet]
-signal_wars = "CwiosQauBnxPHVnpTBS4LPTSSfQudsCN9wVTZJ31aZFV"
+signal_wars = "9s5gawgG2KJy7kofoxhRAve4zL6S7Y8dFuECtpbbBWJZ"
 
 [registry]
 url = "https://api.apr.dev"
