@@ -7,7 +7,7 @@ use anchor_lang::solana_program::hash::hash;
 // - Lost stakes go to treasury (when prediction is wrong)
 // - Treasury can be withdrawn by authority
 
-declare_id!("Mo4812FaCAApnh7qKXBkv2WjXeHHyrZsysPbw12UgCj"); // Devnet deployment v3
+declare_id!("CwiosQauBnxPHVnpTBS4LPTSSfQudsCN9wVTZJ31aZFV"); // Devnet deployment v4
 
 #[program]
 pub mod signal_wars {
